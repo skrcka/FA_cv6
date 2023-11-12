@@ -1,8 +1,29 @@
+from collections import defaultdict
 from enum import Enum, unique
 import asyncio
+import time
 from typing import Any
 from aiohttp import web
 import aiohttp_cors
+
+
+request_counts = defaultdict(int)
+request_timestamps = defaultdict(int)
+
+MAX_REQUESTS = 5
+TIME_FRAME = 60
+
+
+def is_rate_limited(ip):
+    if time.time() - request_timestamps[ip] > TIME_FRAME:
+        request_counts[ip] = 0
+        request_timestamps[ip] = time.time()
+
+    if request_counts[ip] > MAX_REQUESTS:
+        return True
+
+    request_counts[ip] += 1
+    return False
 
 
 @unique
@@ -25,12 +46,24 @@ difficulty_to_password = {
 
 async def handle_post(request: web.Request):
     try:
+        client_ip = request.remote
+
+        if is_rate_limited(client_ip):
+            return web.json_response({
+                "done": False,
+                "result": 'error',
+                "exception": 'Rate limit exceeded',
+            }, status=429)
         data: dict[str, Any] = await request.json()
         difficulty = data.get('difficulty', None)
         password = data.get('password', None)
 
         if difficulty is None or password is None:
-            return web.Response(text="Missing difficulty or password argument", status=400)
+            return web.json_response({
+                "done": False,
+                "result": 'error',
+                "exception": 'Missing difficulty or password argument',
+            }, status=400)
 
         return web.json_response({
             "done": True,

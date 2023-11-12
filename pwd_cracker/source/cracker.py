@@ -24,9 +24,9 @@ def get_passwords_combinations(difficulty):
         case Difficulty.MEDIUM:
             return get_all_combinations(5, "0123456789")
         case Difficulty.HARD:
-            return get_all_combinations(4, "abcdefghijklmnopqrstuvwxyz")
+            return get_all_combinations(4, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
         case Difficulty.VERY_HARD:
-            return get_all_combinations(4, "abcdefghijklmnopqrstuvwxyz0123456789")
+            return get_all_combinations(4, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
         case Difficulty.IMPOSSIBLE:
             return get_all_combinations(5, "".join([chr(i) for i in range(0, 255)]))
 
